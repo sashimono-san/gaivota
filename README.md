@@ -1,0 +1,2 @@
+# gaivota
+Portfolio management tool
