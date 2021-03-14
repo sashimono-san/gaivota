@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-// TODO: Make /users/:id and /users/:uuid point to the same router
 // TODO: Implement Middleware struct
 
 func New(p string) *Mux {
@@ -18,10 +17,11 @@ func New(p string) *Mux {
 }
 
 type Mux struct {
-	Prefix Path
-	Routes map[Path]Router
-	Error  ErrorHandlers
-	ctx    context.Context
+	Prefix     Path
+	Routes     map[Path]Router
+	subRouters []Path
+	Error      ErrorHandlers
+	ctx        context.Context
 }
 
 type ErrorHandlers struct {
@@ -36,14 +36,38 @@ type ErrorHandlersKey struct{}
 func (mux *Mux) NewSubrouter(p string) *Mux {
 	prefix := mux.Prefix.Join(p)
 
+	if path, ok := mux.FindSubrouter(prefix); ok {
+		return mux.Routes[path].(*Mux).NewSubrouter(p)
+	}
+
 	if _, ok := mux.Routes[prefix]; ok {
 		panic(fmt.Sprintf("Duplicate subrouter for prefix: '%s'", prefix))
 	}
 
+	mux.subRouters = append(mux.subRouters, prefix)
+
 	subrouter := New(string(prefix))
 	subrouter.ctx = mux.Context()
 	mux.Routes[subrouter.Prefix] = subrouter
+
 	return subrouter
+}
+
+func (mux *Mux) FindSubrouter(path Path) (Path, bool) {
+	founPath := NewPath("")
+	ok := false
+
+	for _, candidatePath := range mux.subRouters {
+		// Only test prefix if candidate path is bigger than current one
+		if len(founPath) < len(candidatePath) {
+			if path.HasPrefix(candidatePath) {
+				founPath = candidatePath
+				ok = true
+			}
+		}
+	}
+
+	return founPath, ok
 }
 
 // Attempts to match the given request path against the registered routes.
@@ -51,15 +75,18 @@ func (mux *Mux) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	reqPath := NewPath(req.URL.Path)
 
 	if req.URL.Path != string(reqPath) {
-		// If after cleanPath, the paths are different, redirect; This is needed for SEO
+		// If after cleanPath, the paths are different, redirect. This is needed for SEO
 		redirect(res, req, string(reqPath))
 		return
 	}
 
-	reqPathFields := reqPath.Fields()
+	if path, ok := mux.FindSubrouter(reqPath); ok {
+		mux.Routes[path].ServeHTTP(res, req)
+		return
+	}
 
 	for path, route := range mux.Routes {
-		if path.Match(reqPathFields) {
+		if path.Match(reqPath) {
 			route.ServeHTTP(res, req)
 			return
 		}
@@ -111,6 +138,11 @@ func (mux *Mux) Context() context.Context {
 
 func (mux *Mux) Use(p string, methods []string, handler http.Handler) {
 	routePath := mux.Prefix.Join(p)
+
+	if path, ok := mux.FindSubrouter(routePath); ok {
+		mux.Routes[path].Use(p, methods, handler)
+		return
+	}
 
 	route, ok := mux.Routes[routePath]
 

@@ -12,28 +12,73 @@ func NewPath(p string) Path {
 
 type Path string
 
-func (path Path) Match(candidatePathFields []string) bool {
+func (path Path) HasPrefix(prefix Path) bool {
+	prefixFields := prefix.Fields()
 	pathFields := path.Fields()
 
-	if len(pathFields) != len(candidatePathFields) {
+	if len(prefixFields) > len(pathFields)  {
 		return false
 	}
 
+	if string(prefix) == "/" {
+		return true
+	}
+
 	for i, pathField := range pathFields {
+		// In case prefix is not the same size as path
+		if i >= len(prefixFields) {
+			return true
+		}
+
+		// Params are mandatory
 		if isParam(pathField) {
-			if candidatePathFields[i] == "" {
+			if prefixFields[i] == "" {
 				return false
 			}
 
 			continue
 		}
 
-		if pathField != candidatePathFields[i] {
+		if isParam(prefixFields[i]) {
+			if pathField == "" {
+				return false
+			}
+
+			continue
+		}
+
+		if pathField != prefixFields[i] {
 			return false
 		}
 	}
 
 	return true
+}
+
+func (path Path) Match(candidatePath Path) bool {
+	candidatePathFields := candidatePath.Fields()
+	pathFields := path.Fields()
+
+	if len(pathFields) != len(candidatePathFields) {
+		return false
+	}
+
+	return path.HasPrefix(candidatePath)
+	// for i, pathField := range pathFields {
+	// 	if isParam(pathField) {
+	// 		if candidatePathFields[i] == "" {
+	// 			return false
+	// 		}
+
+	// 		continue
+	// 	}
+
+	// 	if pathField != candidatePathFields[i] {
+	// 		return false
+	// 	}
+	// }
+
+	// return true
 }
 
 // Concatenates the passed elements with the current path string

@@ -11,22 +11,53 @@ func shouldPanic(t *testing.T, f func(), message string) {
 	t.Error(message)
 }
 
+func TestHasPrefix(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		path      Path
+		prefix 		Path
+
+		ok bool
+	}{
+		{path: Path("/"), prefix: Path("/"), ok: true},
+		{path: Path("/:id"), prefix: Path("/"), ok: true},
+		{path: Path("/positions"), prefix: Path("/"), ok: true},
+		{path: Path("/:id"), prefix: Path("/123"), ok: true},
+		{path: Path("/123"), prefix: Path("/:id"), ok: true},
+		{path: Path("/positions"), prefix: Path("/positions"), ok: true},
+		{path: Path("/positions/:id"), prefix: Path("/positions"), ok: true},
+		{path: Path("/investments/some-id/positions/other-id"), prefix: Path("/investments/:id/positions"), ok: true},
+		{path: Path("/positions"), prefix: Path("/positions/123123"), ok: false},
+		{path: Path("/:id"), prefix: Path("/positions/123123"), ok: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(string(tc.path), func(t *testing.T) {
+			got := tc.path.HasPrefix(tc.prefix)
+
+			if got != tc.ok {
+				t.Errorf("Mismatch for path '%s' and prefix '%v' - got %v instead of %v", tc.path, tc.prefix, got, tc.ok)
+			}
+		})
+	}
+}
+
 func TestMatch(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		path      Path
-		candidate []string
+		candidate Path
 
 		ok bool
 	}{
-		{path: Path("/"), candidate: []string{}, ok: true},
-		{path: Path("/"), candidate: []string{""}, ok: false},
-		{path: Path("/:id"), candidate: []string{""}, ok: false},
-		{path: Path("/positions"), candidate: []string{""}, ok: false},
-		{path: Path("/:id"), candidate: []string{"123"}, ok: true},
-		{path: Path("/positions"), candidate: []string{"positions"}, ok: true},
-		{path: Path("/positions"), candidate: []string{"positions", "123123"}, ok: false},
+		{path: Path("/"), candidate: Path("/"), ok: true},
+		{path: Path("/:id"), candidate: Path("/"), ok: false},
+		{path: Path("/positions"), candidate: Path("/"), ok: false},
+		{path: Path("/:id"), candidate: Path("/123"), ok: true},
+		{path: Path("/positions"), candidate: Path("/positions"), ok: true},
+		{path: Path("/positions"), candidate: Path("positions/123"), ok: false},
 	}
 
 	for _, tc := range testCases {
@@ -34,7 +65,7 @@ func TestMatch(t *testing.T) {
 			got := tc.path.Match(tc.candidate)
 
 			if got != tc.ok {
-				t.Errorf("Mismatch for path '%s' and candidate '%v' - got %v instead of %v", string(tc.path), tc.candidate, got, tc.ok)
+				t.Errorf("Mismatch for path '%s' and candidate '%v' - got %v instead of %v", tc.path, tc.candidate, got, tc.ok)
 			}
 		})
 	}
@@ -47,6 +78,7 @@ func TestCleanPath(t *testing.T) {
 		path   string
 		wanted string
 	}{
+		{path: "", wanted: "/"},
 		{path: "/", wanted: "/"},
 		{path: "/////", wanted: "/"},
 		{path: "/:id/", wanted: "/:id"},
