@@ -1,6 +1,45 @@
 package router
 
-import "testing"
+import (
+	"testing"
+)
+
+// func TestUse(t *testing.T) {
+// 	t.Parallel()
+
+// 	route := &Route{}
+// 	path := ""
+// 	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { return })
+
+// 	testCases := []struct {
+// 		methods     []string
+// 		shouldPanic bool
+// 	}{
+// 		{methods: []string{http.MethodGet}},
+// 		{methods: []string{http.MethodPost, http.MethodPut}},
+// 		{methods: []string{http.MethodGet}, shouldPanic: true},
+// 		{methods: []string{http.MethodGet, http.MethodDelete}, shouldPanic: true},
+// 	}
+
+// 	for _, tc := range testCases {
+// 		t.Run(string(tc.path), func(t *testing.T) {
+// 			gotParams := tc.route.ExtractParams(tc.path)
+
+// 			if len(gotParams) != len(tc.expected) {
+// 				t.Errorf("Incorrect number of extracted params for path '%s'. Got %v instead of %v", tc.path, len(gotParams), len(tc.expected))
+// 			}
+// 			for param, val := range gotParams {
+// 				if pos, ok := tc.expected[param]; !ok {
+// 					t.Errorf("Got unexpected param for path '%s': %v at position %v", tc.path, param, pos)
+// 				}
+
+// 				if val != tc.expected[param] {
+// 					t.Errorf("Unexpected value for param %s in path '%s'. Got %s and expected %s", param, tc.path, val, tc.expected[param])
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func TestExtractParams(t *testing.T) {
 	t.Parallel()
