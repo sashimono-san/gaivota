@@ -1,4 +1,4 @@
-package router
+package mux
 
 import (
 	"net/http"
@@ -9,10 +9,10 @@ import (
 func TestServeHTTP(t *testing.T) {
 	t.Parallel()
 
-	mux := &Mux{
+	router := &Router{
 		subRouters: []Path{Path("/investments/:id/positions")},
 		Prefix:     Path("/"),
-		Routes: map[Path]Router{
+		Routes: map[Path]http.Handler{
 			// Test simple route
 			Path("/investments"): &Route{
 				Handlers: map[string]http.Handler{
@@ -38,8 +38,8 @@ func TestServeHTTP(t *testing.T) {
 				},
 			},
 			// Test subrouter
-			Path("/investments/:id/positions"): &Mux{
-				Routes: map[Path]Router{
+			Path("/investments/:id/positions"): &Router{
+				Routes: map[Path]http.Handler{
 					// Test route with same prefix as subrouter
 					Path("/investments/:id/positions"): &Route{
 						Handlers: map[string]http.Handler{
@@ -76,7 +76,7 @@ func TestServeHTTP(t *testing.T) {
 		t.Run(tc.link, func(t *testing.T) {
 			req := httptest.NewRequest("GET", tc.link, nil)
 			res := httptest.NewRecorder()
-			mux.ServeHTTP(res, req)
+			router.ServeHTTP(res, req)
 
 			if want, got := tc.statusCode, res.Result().StatusCode; want != got {
 				t.Errorf("Expected status code to be %d, got %d instead", want, got)

@@ -1,4 +1,4 @@
-package router
+package mux
 
 import (
 	"fmt"
@@ -16,10 +16,10 @@ func TestUse(t *testing.T) {
 	}
 	dummyHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) { res.Write([]byte("ok")) })
 
-	mux := &Mux{
+	router := &Router{
 		subRouters: []Path{Path("/investments/:id/positions")},
 		Prefix:     Path("/"),
-		Routes: map[Path]Router{
+		Routes: map[Path]http.Handler{
 			// Test simple route
 			Path("/"): route,
 		},
@@ -38,7 +38,7 @@ func TestUse(t *testing.T) {
 	for _, tc := range testCases {
 		if tc.shouldPanic {
 			shouldPanic(t, func() {
-				route.Use("", tc.methods, dummyHandler)
+				route.Use(tc.methods, dummyHandler)
 			}, fmt.Sprintf("Did not panic for duplicated method in route."))
 
 			// If panic is expected, ignore the rest of the testcase
@@ -46,11 +46,11 @@ func TestUse(t *testing.T) {
 		}
 
 		t.Run(string(tc.name), func(t *testing.T) {
-			route.Use("", tc.methods, dummyHandler)
+			route.Use(tc.methods, dummyHandler)
 
 			req := httptest.NewRequest("GET", "http://example.com/", nil)
 			res := httptest.NewRecorder()
-			mux.ServeHTTP(res, req)
+			router.ServeHTTP(res, req)
 
 			if got := res.Result().StatusCode; got != 200 {
 				t.Errorf("Expected status code to be 200, got %d instead", got)

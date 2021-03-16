@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gaivota/handlers"
-	"gaivota/internal/router"
+	"gaivota/internal/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,15 +33,15 @@ func main() {
 	healthcheck := handlers.NewHealthCheck(logger)
 	positions := handlers.NewPositions(logger)
 
-	mux := router.New("/")
-	mux.Get("/ping", healthcheck)
-	mux.Get("/positions", http.HandlerFunc(positions.Get))
-	mux.Post("/positions", http.HandlerFunc(positions.Add))
+	router := mux.New("/")
+	router.Get("/ping", healthcheck)
+	router.Get("/positions", http.HandlerFunc(positions.Get))
+	router.Post("/positions", http.HandlerFunc(positions.Add))
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
 		Addr:         ":9090",
-		Handler:      mux,
+		Handler:      router,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,

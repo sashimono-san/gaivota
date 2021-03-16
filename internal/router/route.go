@@ -1,4 +1,4 @@
-package router
+package mux
 
 import (
 	"context"
@@ -48,10 +48,10 @@ func (route *Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	http.NotFound(res, req)
 }
 
-func (route *Route) Use(path string, methods []string, handler http.Handler) {
+func (route *Route) Use(methods []string, handler http.Handler) {
 	for _, method := range methods {
 		if _, ok := route.Handlers[method]; ok {
-			panic(fmt.Sprintf("Duplicate handler for %s method for route: '%s'", method, path))
+			panic(fmt.Sprintf("Duplicate handler for %s method for route: '%s'", method, route.Path))
 		}
 
 		route.Handlers[method] = handler

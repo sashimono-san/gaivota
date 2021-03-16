@@ -1,14 +1,9 @@
-package router
+package mux
 
 import (
 	"context"
 	"net/http"
 )
-
-type Router interface {
-	ServeHTTP(http.ResponseWriter, *http.Request)
-	Use(p string, methods []string, handler http.Handler)
-}
 
 // ----------------------------------------------------------------------------
 // Request context

@@ -1,4 +1,4 @@
-package router
+package mux
 
 import (
 	"fmt"
@@ -15,8 +15,8 @@ func TestHasPrefix(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		path      Path
-		prefix 		Path
+		path   Path
+		prefix Path
 
 		ok bool
 	}{

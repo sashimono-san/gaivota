@@ -1,4 +1,4 @@
-package router
+package mux
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ func (path Path) HasPrefix(prefix Path) bool {
 	prefixFields := prefix.Fields()
 	pathFields := path.Fields()
 
-	if len(prefixFields) > len(pathFields)  {
+	if len(prefixFields) > len(pathFields) {
 		return false
 	}
 
