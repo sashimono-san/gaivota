@@ -12,6 +12,7 @@ func NewRoute(path Path, ctx context.Context) *Route {
 	return &Route{
 		Path:      path,
 		ParamsPos: paramsPos,
+		Handlers:  make(map[string]http.Handler),
 		ctx:       ctx,
 	}
 }
@@ -26,6 +27,8 @@ type Route struct {
 func (route *Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if handler, ok := route.Handlers[req.Method]; ok {
 
+		fmt.Printf("Handling %s request for %s with route at %s\n", req.Method, req.URL.Path, route.Path)
+
 		// Add path params to request context before calling the handler
 		params := route.ExtractParams(req.URL.Path)
 		req = requestWithPathParams(req, params)
@@ -33,6 +36,8 @@ func (route *Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		handler.ServeHTTP(res, req)
 		return
 	}
+
+	fmt.Printf("Request method %s is not supported by route at %s\n", req.Method, route.Path)
 
 	errorHandlers := route.ctx.Value(ErrorHandlersKey{}).(ErrorHandlers)
 	if errorHandlers.MethodNotAllowed != nil {
@@ -44,16 +49,13 @@ func (route *Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func (route *Route) Use(path string, methods []string, handler http.Handler) {
-	handlers := make(map[string]http.Handler)
 	for _, method := range methods {
 		if _, ok := route.Handlers[method]; ok {
 			panic(fmt.Sprintf("Duplicate handler for %s method for route: '%s'", method, path))
 		}
 
-		handlers[method] = handler
+		route.Handlers[method] = handler
 	}
-
-	route.Handlers = handlers
 }
 
 func (route *Route) ExtractParams(path string) Params {

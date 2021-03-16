@@ -85,6 +85,8 @@ func (mux *Mux) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	fmt.Printf("Got %s request for %s\n", req.Method, req.URL.Path)
+
 	for path, route := range mux.Routes {
 		if path.Match(reqPath) {
 			route.ServeHTTP(res, req)
@@ -147,6 +149,7 @@ func (mux *Mux) Use(p string, methods []string, handler http.Handler) {
 	route, ok := mux.Routes[routePath]
 
 	if !ok {
+		fmt.Printf("Creating new Route at %s\n", routePath)
 		route = NewRoute(routePath, mux.Context())
 		mux.Routes[routePath] = route
 	}

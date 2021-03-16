@@ -11,7 +11,7 @@ func TestServeHTTP(t *testing.T) {
 
 	mux := &Mux{
 		subRouters: []Path{Path("/investments/:id/positions")},
-		Prefix: Path("/"),
+		Prefix:     Path("/"),
 		Routes: map[Path]Router{
 			// Test simple route
 			Path("/investments"): &Route{
@@ -79,7 +79,7 @@ func TestServeHTTP(t *testing.T) {
 			mux.ServeHTTP(res, req)
 
 			if want, got := tc.statusCode, res.Result().StatusCode; want != got {
-				t.Errorf("expected status code to be %d, got %d instead", want, got)
+				t.Errorf("Expected status code to be %d, got %d instead", want, got)
 			}
 		})
 	}

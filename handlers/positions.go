@@ -10,31 +10,11 @@ type Positions struct {
 	logger *log.Logger
 }
 
-func NewPosition(logger *log.Logger) *Positions {
+func NewPositions(logger *log.Logger) *Positions {
 	return &Positions{logger}
 }
 
-func (handler *Positions) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodGet {
-		handler.GetPositions(res, req)
-		return
-	}
-
-	if req.Method == http.MethodPost {
-		handler.AddPosition(res, req)
-		return
-	}
-
-	// if req.Method == http.MethodPut {
-	// 	req.URL.Path
-	// 	handler.UpdatePosition(res, req)
-	// 	return
-	// }
-
-	res.WriteHeader(http.StatusMethodNotAllowed)
-}
-
-func (handler *Positions) GetPositions(res http.ResponseWriter, req *http.Request) {
+func (handler *Positions) Get(res http.ResponseWriter, req *http.Request) {
 	handler.logger.Println("Handle GET Positions")
 
 	positions := data.GetPositions()
@@ -45,7 +25,7 @@ func (handler *Positions) GetPositions(res http.ResponseWriter, req *http.Reques
 	}
 }
 
-func (handler *Positions) AddPosition(res http.ResponseWriter, req *http.Request) {
+func (handler *Positions) Add(res http.ResponseWriter, req *http.Request) {
 	handler.logger.Println("Handle POST Positions")
 
 	position := &data.Position{}

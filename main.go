@@ -31,29 +31,21 @@ func index(rw http.ResponseWriter, req *http.Request) {
 func main() {
 	logger := log.New(os.Stdout, "Gaivota-api", log.LstdFlags)
 	healthcheck := handlers.NewHealthCheck(logger)
-	positionsHandler := handlers.NewPosition(logger)
+	positions := handlers.NewPositions(logger)
 
-	p := router.Path("/:adshadsb")
-	p2 := router.Path("//////")
-
-	v := p.Match(p2.Fields())
-
-	fmt.Println("%v %v", p2.Fields(), v)
-
-	// https://golang.org/pkg/net/http/#ServerMux
-	serveMux := http.NewServeMux()
-	serveMux.Handle("/ping", healthcheck)
-	serveMux.Handle("/positions", positionsHandler)
+	mux := router.New("/")
+	mux.Get("/ping", healthcheck)
+	mux.Get("/positions", http.HandlerFunc(positions.Get))
+	mux.Post("/positions", http.HandlerFunc(positions.Add))
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
 		Addr:         ":9090",
-		Handler:      serveMux,
+		Handler:      mux,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
-	// http.HandleFunc("/", index)
 
 	go func() {
 		logger.Println("Starting server")
