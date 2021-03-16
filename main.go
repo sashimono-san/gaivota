@@ -33,7 +33,7 @@ func main() {
 	healthcheck := handlers.NewHealthCheck(logger)
 	positions := handlers.NewPositions(logger)
 
-	router := mux.New("/")
+	router := mux.NewRouter("/")
 	router.Get("/ping", healthcheck)
 	router.Get("/positions", http.HandlerFunc(positions.Get))
 	router.Post("/positions", http.HandlerFunc(positions.Add))

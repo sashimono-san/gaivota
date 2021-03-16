@@ -8,7 +8,7 @@ import (
 
 // TODO: Implement Middleware struct
 
-func New(p string) *Router {
+func NewRouter(p string) *Router {
 	return &Router{
 		Prefix: NewPath(p),
 		Routes: make(map[Path]http.Handler),
@@ -46,7 +46,7 @@ func (router *Router) NewSubrouter(p string) *Router {
 
 	router.subRouters = append(router.subRouters, prefix)
 
-	subrouter := New(string(prefix))
+	subrouter := NewRouter(string(prefix))
 	subrouter.ctx = router.Context()
 	router.Routes[subrouter.Prefix] = subrouter
 
