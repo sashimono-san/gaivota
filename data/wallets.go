@@ -1,17 +1,15 @@
 package data
 
 type Wallet struct {
-	ID         int
-	SKU        string
-	UserId     int
-	PositionId int
-	Name       string
-	Amount     float32
-	Address    string
-	Location   string
-	CreatedOn  string
-	UpdatedOn  string
-	DeletedOn  string
+	ID         int     `json:"id"`
+	UserID     int     `json:"user"`
+	Name       string  `json:"name"`
+	TotalValue float32 `json:"totalValue"`
+	Address    string  `json:"address"`
+	Location   string  `json:"location"`
+	CreatedAt  string  `json:"-"`
+	UpdatedAt  string  `json:"-"`
+	DeletedAt  string  `json:"-"`
 }
 
 var wallets = []*Wallet{}
