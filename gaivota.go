@@ -35,12 +35,19 @@ func main() {
 
 	router := mux.NewRouter("/")
 	router.Get("/ping", healthcheck)
-	router.Get("/positions", http.HandlerFunc(positions.Get))
-	router.Post("/positions", http.HandlerFunc(positions.Add))
+
+	positionsRouter := router.NewSubrouter("/positions")
+	positionsRouter.Get("/", http.HandlerFunc(positions.Get))
+	positionsRouter.Post("/", http.HandlerFunc(positions.Add))
+
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		panic("Missing mandatory environment variable PORT")
+	}
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
-		Addr:         ":9090",
+		Addr:         fmt.Sprintf("127.0.0.1:%s", port),
 		Handler:      router,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
