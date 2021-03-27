@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: .
+      target: development
+    depends_on:
+      - db
+    ports:
+      - "8888:${PORT}"
+    networks:
+      - appnet
+
+  db:
+    image: postgres:13
+    ports:
+      - "5555:5432"
+    environment:
+      POSTGRES_DB: gaivota
+      POSTGRES_USER: gaivota
+      POSTGRES_PASSWORD: secretpassword
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+volumes:
+  db:
+    driver: "local"
+
+networks:
+  appnet:
+    driver: "bridge"
