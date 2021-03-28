@@ -1,10 +1,5 @@
 package gaivota
 
-import (
-	"database/sql/driver"
-	"errors"
-)
-
 type User struct {
 	ID        int    `json:"id"`
 	Email     string `json:"email"`
@@ -148,21 +143,6 @@ type HoldingStore interface {
 // Operations enum
 type OrderOperation string
 
-// Get data back as OrderOperation type - Scanner interface https://golang.org/pkg/database/sql/#Scanner
-func (operation *OrderOperation) Scan(value interface{}) error {
-	asBytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("Operation is not []byte")
-	}
-	*operation = OrderOperation(string(asBytes))
-	return nil
-}
-
-// How database/sql should handle  - Valuer interface http://golang.org/pkg/database/sql/driver/#Valuer
-func (operation OrderOperation) Value() (driver.Value, error) {
-	return string(operation), nil
-}
-
 const (
 	OrderOperationSell OrderOperation = "sell"
 	OrderOperationBuy  OrderOperation = "buy"
@@ -170,21 +150,6 @@ const (
 
 // Order type enum
 type OrderType string
-
-// Get data back as OrderOperation type - Scanner interface https://golang.org/pkg/database/sql/#Scanner
-func (orderType *OrderType) Scan(value interface{}) error {
-	asBytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("Order type is not []byte")
-	}
-	*orderType = OrderType(string(asBytes))
-	return nil
-}
-
-// How database/sql should handle  - Valuer interface http://golang.org/pkg/database/sql/driver/#Valuer
-func (orderType OrderType) Value() (driver.Value, error) {
-	return string(orderType), nil
-}
 
 const (
 	OrderTypeLimit  OrderType = "limit"
