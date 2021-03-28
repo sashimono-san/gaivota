@@ -24,11 +24,11 @@ FROM builder-base AS development
 
 RUN go get github.com/cespare/reflex
 
-CMD ["reflex", "--start-service", "-r", "\\.go$", "go", "run", "."]
+CMD ["reflex", "--start-service", "-r", "\\.go$", "go", "run", "./cmd/gaivota"]
 
 FROM builder-base AS builder
 
-RUN go build -o gaivota .
+RUN go build -o gaivota ./cmd/gaivota
 
 FROM base AS production
 

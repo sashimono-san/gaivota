@@ -1,77 +1,220 @@
-package main
+package gaivota
 
 import (
-	"context"
-	"fmt"
-	"gaivota/handlers"
-	"gaivota/internal/mux"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
+	"database/sql/driver"
+	"errors"
 )
 
-func index(rw http.ResponseWriter, req *http.Request) {
-	log.Println("Got request to /")
-	data, err := ioutil.ReadAll(req.Body)
-
-	if err != nil {
-		// http.Error replaces the next couple of lines
-		// rw.WriteHeader(http.StatusBadRequest)
-		// rw.Write([]byte("Bad request."))
-		http.Error(rw, "Bad request", http.StatusBadRequest)
-		return
-	}
-	log.Printf("Data %s\n", data)
-	fmt.Fprintf(rw, "Hello, %s!\n", data)
+type User struct {
+	ID        int    `json:"id"`
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	CreatedAt string `json:"-"`
+	UpdatedAt string `json:"-"`
+	DeletedAt string `json:"-"`
 }
 
-func main() {
-	logger := log.New(os.Stdout, "Gaivota-api", log.LstdFlags)
-	healthcheck := handlers.NewHealthCheck(logger)
-	positions := handlers.NewPositions(logger)
+type UserStore interface {
+	// Add creates a new User in the UsersStore and returns User with ID
+	Add(*User) (*User, error)
+	// Returns all users in the store
+	All() ([]User, error)
+	// Delete the User from the store
+	Delete(*User) error
+	// Get retrieves User if `ID` exists
+	Get(id int) (*User, error)
+	// Update the User in the store.
+	Update(*User)
+}
 
-	router := mux.NewRouter("/")
-	router.Get("/ping", healthcheck)
+type Portfolio struct {
+	ID        int    `json:"id"`
+	UserID    int    `json:"user"`
+	Name      string `json:"name"`
+	CreatedAt string `json:"-"`
+	UpdatedAt string `json:"-"`
+	DeletedAt string `json:"-"`
+}
 
-	positionsRouter := router.NewSubrouter("/positions")
-	positionsRouter.Get("/", http.HandlerFunc(positions.Get))
-	positionsRouter.Post("/", http.HandlerFunc(positions.Add))
+type PortfolioStore interface {
+	// Add creates a new Portfolio in the PortfoliosStore and returns Portfolio with ID
+	Add(*Portfolio) (*Portfolio, error)
+	// Returns all Portfolios in the store
+	All() ([]Portfolio, error)
+	// Delete the Portfolio from the store
+	Delete(*Portfolio) error
+	// Get retrieves Portfolio if `ID` exists
+	Get(id int) (*Portfolio, error)
+	// Update the Portfolio in the store.
+	Update(*Portfolio)
+}
 
-	port, ok := os.LookupEnv("PORT")
+type Wallet struct {
+	ID         int     `json:"id"`
+	UserID     int     `json:"user"`
+	Name       string  `json:"name"`
+	TotalValue float32 `json:"totalValue"`
+	Address    string  `json:"address"`
+	Location   string  `json:"location"`
+	CreatedAt  string  `json:"-"`
+	UpdatedAt  string  `json:"-"`
+	DeletedAt  string  `json:"-"`
+}
+
+type WalletStore interface {
+	// Add creates a new Wallet in the WalletsStore and returns Wallet with ID
+	Add(*Wallet) (*Wallet, error)
+	// Returns all Wallets in the store
+	All() ([]Wallet, error)
+	// Delete the Wallet from the store
+	Delete(*Wallet) error
+	// Get retrieves Wallet if `ID` exists
+	Get(id int) (*Wallet, error)
+	// Update the Wallet in the store.
+	Update(*Wallet)
+}
+
+type Investment struct {
+	ID          int    `json:"id"`
+	PortfolioID int    `json:"portfolio"`
+	Token       string `json:"token"`
+	TokenSymbol string `json:"symbol"`
+	CreatedAt   string `json:"-"`
+	UpdatedAt   string `json:"-"`
+	DeletedAt   string `json:"-"`
+}
+
+type InvestmentStore interface {
+	// Add creates a new Investment in the InvestmentsStore and returns Investment with ID
+	Add(*Investment) (*Investment, error)
+	// Returns all Investments in the store
+	All() ([]Investment, error)
+	// Delete the Investment from the store
+	Delete(*Investment) error
+	// Get retrieves Investment if `ID` exists
+	Get(id int) (*Investment, error)
+	// Update the Investment in the store.
+	Update(*Investment)
+}
+
+type Position struct {
+	ID           int     `json:"id"`
+	InvestmentID int     `json:"investment"`
+	Amount       float64 `json:"amount"`
+	AveragePrice float64 `json:"averagePrice"`
+	Profit       float64 `json:"profit,omitempty"`
+	CreatedAt    string  `json:"-"`
+	UpdatedAt    string  `json:"-"`
+	DeletedAt    string  `json:"-"`
+}
+
+type PositionStore interface {
+	// Add creates a new Position in the PositionsStore and returns Position with ID
+	Add(*Position) (*Position, error)
+	// Returns all Positions in the store
+	All() ([]Position, error)
+	// Delete the Position from the store
+	Delete(*Position) error
+	// Get retrieves Position if `ID` exists
+	Get(id int) (*Position, error)
+	// Update the Position in the store.
+	Update(*Position)
+}
+
+type Holding struct {
+	ID         int     `json:"id"`
+	WalletID   int     `json:"wallet"`
+	PositionID int     `json:"position"`
+	Amount     float64 `json:"amount"`
+	CreatedAt  string  `json:"-"`
+	UpdatedAt  string  `json:"-"`
+	DeletedAt  string  `json:"-"`
+}
+
+type HoldingStore interface {
+	// Add creates a new Holding in the HoldingsStore and returns Holding with ID
+	Add(*Holding) (*Holding, error)
+	// Returns all Holdings in the store
+	All() ([]Holding, error)
+	// Delete the Holding from the store
+	Delete(*Holding) error
+	// Get retrieves Holding if `ID` exists
+	Get(id int) (*Holding, error)
+	// Update the Holding in the store.
+	Update(*Holding)
+}
+
+// Operations enum
+type OrderOperation string
+
+// Get data back as OrderOperation type - Scanner interface https://golang.org/pkg/database/sql/#Scanner
+func (operation *OrderOperation) Scan(value interface{}) error {
+	asBytes, ok := value.([]byte)
 	if !ok {
-		panic("Missing mandatory environment variable PORT")
+		return errors.New("Operation is not []byte")
 	}
+	*operation = OrderOperation(string(asBytes))
+	return nil
+}
 
-	// https://golang.org/pkg/net/http/#Server
-	server := &http.Server{
-		Addr:         fmt.Sprintf("127.0.0.1:%s", port),
-		Handler:      router,
-		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+// How database/sql should handle  - Valuer interface http://golang.org/pkg/database/sql/driver/#Valuer
+func (operation OrderOperation) Value() (driver.Value, error) {
+	return string(operation), nil
+}
+
+const (
+	OrderOperationSell OrderOperation = "sell"
+	OrderOperationBuy  OrderOperation = "buy"
+)
+
+// Order type enum
+type OrderType string
+
+// Get data back as OrderOperation type - Scanner interface https://golang.org/pkg/database/sql/#Scanner
+func (orderType *OrderType) Scan(value interface{}) error {
+	asBytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("Order type is not []byte")
 	}
+	*orderType = OrderType(string(asBytes))
+	return nil
+}
 
-	go func() {
-		logger.Println("Starting server")
-		err := server.ListenAndServe()
-		if err != nil {
-			logger.Fatal(err)
-		}
-	}()
+// How database/sql should handle  - Valuer interface http://golang.org/pkg/database/sql/driver/#Valuer
+func (orderType OrderType) Value() (driver.Value, error) {
+	return string(orderType), nil
+}
 
-	// https://golang.org/pkg/os/signal/#Notify
-	sigChan := make(chan os.Signal)
-	signal.Notify(sigChan, os.Interrupt)
-	signal.Notify(sigChan, os.Kill)
+const (
+	OrderTypeLimit  OrderType = "limit"
+	OrderTypeMarket OrderType = "market"
+)
 
-	// https://golang.org/ref/spec#Receive_operator
-	sig := <-sigChan
-	logger.Printf("Received terminate %s signal, gracefully shutting down.", sig)
+type Order struct {
+	ID         int            `json:"id"`
+	PositionID int            `json:"position"`
+	Amount     float32        `json:"amount"`
+	UnitPrice  float32        `json:"unitPrice"`
+	TotalPrice float32        `json:"totalPrice"`
+	Operation  OrderOperation `json:"operation"`
+	Type       OrderType      `json:"type"`
+	Exchange   string         `json:"exchange"`
+	ExecutedAt string         `json:"executedAt"`
+	CreatedAt  string         `json:"-"`
+	UpdatedAt  string         `json:"-"`
+	DeletedAt  string         `json:"-"`
+}
 
-	// https://pkg.go.dev/context
-	timeoutContext, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	server.Shutdown(timeoutContext)
+type OrderStore interface {
+	// Add creates a new Order in the OrdersStore and returns Order with ID
+	Add(*Order) (*Order, error)
+	// Returns all Orders in the store
+	All() ([]Order, error)
+	// Delete the Order from the store
+	Delete(*Order) error
+	// Get retrieves Order if `ID` exists
+	Get(id int) (*Order, error)
+	// Update the Order in the store.
+	Update(*Order)
 }

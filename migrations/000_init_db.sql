@@ -84,6 +84,7 @@ create table holdings(
 
 create trigger update_holdings_updated_at before update on holdings for each row execute procedure update_updated_at_column();
 
+-- Create orders table
 create type order_operations as enum ('sell', 'buy');
 create type order_types as enum ('limit', 'market');
 
