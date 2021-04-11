@@ -17,3 +17,6 @@
 # Docker
 Dockerfile
 docker-compose.yml
+
+# App config
+config.exemple.json

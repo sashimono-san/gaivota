@@ -1,0 +1,4 @@
+{
+  "Port": 9090,
+  "DatabaseConnString": "postgres://gaivota:secretpassword@db:5432/gaivota"
+}

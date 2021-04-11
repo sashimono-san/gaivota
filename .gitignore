@@ -16,3 +16,6 @@
 
 # Database
 tern.conf
+
+# App config
+config.json
