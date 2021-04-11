@@ -9,6 +9,8 @@ services:
       - db
     ports:
       - "8888:${PORT}"
+    volumes:
+      - ./:/app
     networks:
       - appnet
 
