@@ -1,5 +1,7 @@
 package gaivota
 
+import "context"
+
 type User struct {
 	ID        int    `json:"id"`
 	Email     string `json:"email"`
@@ -12,15 +14,15 @@ type User struct {
 
 type UserStore interface {
 	// Add creates a new User in the UsersStore and returns User with ID
-	Add(*User) (*User, error)
+	Add(context.Context, *User) (*User, error)
 	// Returns all users in the store
-	All() ([]User, error)
+	All(context.Context) (*[]User, error)
 	// Delete the User from the store
-	Delete(*User) error
-	// Get retrieves User if `ID` exists
-	Get(id int) (*User, error)
+	Delete(ctx context.Context, id int) error
+	// Gets User if `ID` exists
+	Get(ctx context.Context, id int) (*User, error)
 	// Update the User in the store.
-	Update(*User)
+	Update(context.Context, *User) error
 }
 
 type Portfolio struct {
@@ -34,15 +36,17 @@ type Portfolio struct {
 
 type PortfolioStore interface {
 	// Add creates a new Portfolio in the PortfoliosStore and returns Portfolio with ID
-	Add(*Portfolio) (*Portfolio, error)
+	Add(context.Context, *Portfolio) (*Portfolio, error)
 	// Returns all Portfolios in the store
-	All() ([]Portfolio, error)
+	All(context.Context) (*[]Portfolio, error)
 	// Delete the Portfolio from the store
-	Delete(*Portfolio) error
-	// Get retrieves Portfolio if `ID` exists
-	Get(id int) (*Portfolio, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Portfolio if `ID` exists
+	Get(ctx context.Context, id int) (*Portfolio, error)
+	// Gets all Portfolios for user
+	GetByUserID(ctx context.Context, userId int) (*[]Portfolio, error)
 	// Update the Portfolio in the store.
-	Update(*Portfolio)
+	Update(context.Context, *Portfolio) error
 }
 
 type Wallet struct {
@@ -59,15 +63,17 @@ type Wallet struct {
 
 type WalletStore interface {
 	// Add creates a new Wallet in the WalletsStore and returns Wallet with ID
-	Add(*Wallet) (*Wallet, error)
+	Add(context.Context, *Wallet) (*Wallet, error)
 	// Returns all Wallets in the store
-	All() ([]Wallet, error)
+	All(context.Context) (*[]Wallet, error)
 	// Delete the Wallet from the store
-	Delete(*Wallet) error
-	// Get retrieves Wallet if `ID` exists
-	Get(id int) (*Wallet, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Wallet if `ID` exists
+	Get(ctx context.Context, id int) (*Wallet, error)
+	// Gets all Wallets for user
+	GetByUserID(ctx context.Context, userId int) (*[]Wallet, error)
 	// Update the Wallet in the store.
-	Update(*Wallet)
+	Update(context.Context, *Wallet) error
 }
 
 type Investment struct {
@@ -82,15 +88,19 @@ type Investment struct {
 
 type InvestmentStore interface {
 	// Add creates a new Investment in the InvestmentsStore and returns Investment with ID
-	Add(*Investment) (*Investment, error)
+	Add(context.Context, *Investment) (*Investment, error)
 	// Returns all Investments in the store
-	All() ([]Investment, error)
+	All(context.Context) (*[]Investment, error)
 	// Delete the Investment from the store
-	Delete(*Investment) error
-	// Get retrieves Investment if `ID` exists
-	Get(id int) (*Investment, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Investment if `ID` exists
+	Get(ctx context.Context, id int) (*Investment, error)
+	// Gets all Investments for user
+	GetByUserID(ctx context.Context, userId int) (*[]Investment, error)
+	// Gets all Investments for portfolio
+	GetByPortfolioID(ctx context.Context, portfolioId int) (*[]Investment, error)
 	// Update the Investment in the store.
-	Update(*Investment)
+	Update(context.Context, *Investment) error
 }
 
 type Position struct {
@@ -106,38 +116,46 @@ type Position struct {
 
 type PositionStore interface {
 	// Add creates a new Position in the PositionsStore and returns Position with ID
-	Add(*Position) (*Position, error)
+	Add(context.Context, *Position) (*Position, error)
 	// Returns all Positions in the store
-	All() ([]Position, error)
+	All(context.Context) ([]Position, error)
 	// Delete the Position from the store
-	Delete(*Position) error
-	// Get retrieves Position if `ID` exists
-	Get(id int) (*Position, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Position if `ID` exists
+	Get(ctx context.Context, id int) (*Position, error)
 	// Update the Position in the store.
-	Update(*Position)
+	Update(context.Context, *Position) error
 }
 
 type Holding struct {
-	ID         int     `json:"id"`
-	WalletID   int     `json:"wallet"`
-	PositionID int     `json:"position"`
-	Amount     float64 `json:"amount"`
-	CreatedAt  string  `json:"-"`
-	UpdatedAt  string  `json:"-"`
-	DeletedAt  string  `json:"-"`
+	ID         int      `json:"id"`
+	WalletID   int      `json:"wallet"`
+	Wallet     Wallet   `json:"-"`
+	PositionID int      `json:"position"`
+	Position   Position `json:"-"`
+	Amount     float64  `json:"amount"`
+	CreatedAt  string   `json:"-"`
+	UpdatedAt  string   `json:"-"`
+	DeletedAt  string   `json:"-"`
 }
 
 type HoldingStore interface {
 	// Add creates a new Holding in the HoldingsStore and returns Holding with ID
-	Add(*Holding) (*Holding, error)
+	Add(context.Context, *Holding) (*Holding, error)
 	// Returns all Holdings in the store
-	All() ([]Holding, error)
+	All(context.Context) ([]Holding, error)
 	// Delete the Holding from the store
-	Delete(*Holding) error
-	// Get retrieves Holding if `ID` exists
-	Get(id int) (*Holding, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Holding if `ID` exists
+	Get(ctx context.Context, id int) (*Holding, error)
+	// Gets all Holdings for user
+	GetByUserID(ctx context.Context, userId int) (*[]Holding, error)
+	// Gets all Holdings for wallet
+	GetByWalletID(ctx context.Context, walletId int) (*[]Holding, error)
+	// Gets all Holdings for position
+	GetByPositionID(ctx context.Context, positionId int) (*[]Holding, error)
 	// Update the Holding in the store.
-	Update(*Holding)
+	Update(context.Context, *Holding) error
 }
 
 // Operations enum
@@ -173,13 +191,13 @@ type Order struct {
 
 type OrderStore interface {
 	// Add creates a new Order in the OrdersStore and returns Order with ID
-	Add(*Order) (*Order, error)
+	Add(context.Context, *Order) (*Order, error)
 	// Returns all Orders in the store
-	All() ([]Order, error)
+	All(context.Context) ([]Order, error)
 	// Delete the Order from the store
-	Delete(*Order) error
-	// Get retrieves Order if `ID` exists
-	Get(id int) (*Order, error)
+	Delete(ctx context.Context, id int) error
+	// Gets Order if `ID` exists
+	Get(ctx context.Context, id int) (*Order, error)
 	// Update the Order in the store.
-	Update(*Order)
+	Update(context.Context, *Order) error
 }

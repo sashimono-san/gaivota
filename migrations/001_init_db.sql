@@ -1,5 +1,11 @@
 -- Create function to track when records were updated
-{{ template "functions/update_updated_at_column.sql" . }}
+create or replace function update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+  end;
+$$ language plpgsql;
 
 -- Create users table
 create table users(
@@ -9,7 +15,7 @@ create table users(
   last_name varchar not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  deleted_at timestamptz,
+  deleted_at timestamptz
 );
 
 create trigger update_users_updated_at before update on users for each row execute procedure update_updated_at_column();
@@ -17,12 +23,12 @@ create trigger update_users_updated_at before update on users for each row execu
 -- Create portfolios table
 create table portfolios(
   id serial primary key,
-  user int references users(id) not null,
+  user_id int references users(id) not null,
   name varchar(50) not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
-  unique (user, name)
+  unique (user_id, name)
 );
 
 create trigger update_portfolios_updated_at before update on portfolios for each row execute procedure update_updated_at_column();
@@ -30,7 +36,7 @@ create trigger update_portfolios_updated_at before update on portfolios for each
 -- Create wallets table
 create table wallets(
   id serial primary key,
-  user int references users(id) not null,
+  user_id int references users(id) not null,
   name varchar(50) not null,
   total_value double precision not null default 0.0,
   address varchar not null,
@@ -38,7 +44,7 @@ create table wallets(
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
-  unique (user, name)
+  unique (user_id, name)
 );
 
 create trigger update_wallets_updated_at before update on wallets for each row execute procedure update_updated_at_column();
@@ -46,13 +52,13 @@ create trigger update_wallets_updated_at before update on wallets for each row e
 -- Create investments table
 create table investments(
   id serial primary key,
-  portfolio int references portfolios(id) not null,
+  portfolio_id int references portfolios(id) not null,
   token varchar(50) not null,
   token_symbol varchar(10),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
-  unique (portfolio, token)
+  unique (portfolio_id, token)
 );
 
 create trigger update_investments_updated_at before update on investments for each row execute procedure update_updated_at_column();
@@ -60,13 +66,13 @@ create trigger update_investments_updated_at before update on investments for ea
 -- Create positions table
 create table positions(
   id serial primary key,
-  investment int references investments(id) not null,
+  investment_id int references investments(id) not null,
   amount double precision not null,
   average_price double precision not null,
   profit double precision not null default 0.0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  deleted_at timestamptz,
+  deleted_at timestamptz
 );
 
 create trigger update_positions_updated_at before update on positions for each row execute procedure update_updated_at_column();
@@ -74,12 +80,12 @@ create trigger update_positions_updated_at before update on positions for each r
 -- Create holdings relationship table
 create table holdings(
   id serial primary key,
-  position int references positions(id) not null,
-  wallet int references wallets(id) not null,
+  position_id int references positions(id) not null,
+  wallet_id int references wallets(id) not null,
   amount double precision not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  deleted_at timestamptz,
+  deleted_at timestamptz
 );
 
 create trigger update_holdings_updated_at before update on holdings for each row execute procedure update_updated_at_column();
@@ -90,7 +96,7 @@ create type order_types as enum ('limit', 'market');
 
 create table orders(
   id serial primary key,
-  position int references positions(id) not null,
+  position_id int references positions(id) not null,
   amount double precision not null,
   unit_price double precision not null,
   total_price double precision not null,
@@ -100,7 +106,7 @@ create table orders(
   executed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  deleted_at timestamptz,
+  deleted_at timestamptz
 );
 
 create trigger update_orders_updated_at before update on orders for each row execute procedure update_updated_at_column();

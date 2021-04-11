@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"gaivota/data"
 	"log"
 	"net/http"
 )
@@ -17,24 +16,24 @@ func NewPositions(logger *log.Logger) *Positions {
 func (handler *Positions) Get(res http.ResponseWriter, req *http.Request) {
 	handler.logger.Println("Handle GET Positions")
 
-	positions := data.GetPositions()
-	err := positions.ToJSON(res)
+	// positions := gaivota.GetPositions()
+	// err := positions.ToJSON(res)
 
-	if err != nil {
-		http.Error(res, "Unable to parse positions' list", http.StatusInternalServerError)
-	}
+	// if err != nil {
+	// 	http.Error(res, "Unable to parse positions' list", http.StatusInternalServerError)
+	// }
 }
 
 func (handler *Positions) Add(res http.ResponseWriter, req *http.Request) {
 	handler.logger.Println("Handle POST Positions")
 
-	position := &data.Position{}
-	err := position.FromJSON(req.Body)
+	// position := &gaivota.Position{}
+	// err := position.FromJSON(req.Body)
 
-	if err != nil {
-		http.Error(res, "Unable to parse position", http.StatusBadRequest)
-	}
+	// if err != nil {
+	// 	http.Error(res, "Unable to parse position", http.StatusBadRequest)
+	// }
 
-	// handler.logger.Printf("Position: %#v", position)
-	data.AddPosition(position)
+	// // handler.logger.Printf("Position: %#v", position)
+	// gaivota.AddPosition(position)
 }
