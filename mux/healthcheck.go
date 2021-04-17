@@ -7,11 +7,6 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-type HealthCheck struct {
-	logger       *log.Logger
-	dependencies []gaivota.HealthChecker
-}
-
 func NewHealthCheck(logger *log.Logger, dependencies []gaivota.HealthChecker) *HealthCheck {
 	return &HealthCheck{
 		logger,
@@ -19,12 +14,16 @@ func NewHealthCheck(logger *log.Logger, dependencies []gaivota.HealthChecker) *H
 	}
 }
 
+type HealthCheck struct {
+	logger       *log.Logger
+	dependencies []gaivota.HealthChecker
+}
+
 func (hc *HealthCheck) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, dep := range hc.dependencies {
 		msg, err := dep.Ping()
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte(msg))
+			http.Error(rw, msg, http.StatusInternalServerError)
 			return
 		}
 	}
