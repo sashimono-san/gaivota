@@ -1,4 +1,4 @@
-module gaivota
+module github.com/leoschet/gaivota
 
 go 1.15
 

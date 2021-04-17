@@ -3,7 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"gaivota"
+
+	"github.com/leoschet/gaivota"
 )
 
 type PositionStore struct {

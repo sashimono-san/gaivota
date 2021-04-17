@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"gaivota"
 
 	"github.com/jackc/pgx/v4/pgx"
+	"github.com/leoschet/gaivota"
 )
 
 type UserStore struct {

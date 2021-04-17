@@ -3,14 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"gaivota/handlers"
-	"gaivota/internal/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"gaivota/handlers"
+	"gaivota/internal/config"
+	"gaivota/pkg/mux"
+	"gaivota/pkg/postgres"
+
+	"github.com/leoschet/gaivota"
 )
 
 func index(rw http.ResponseWriter, req *http.Request) {
