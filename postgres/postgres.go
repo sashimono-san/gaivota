@@ -4,8 +4,6 @@ import (
 	"context"
 	"regexp"
 	"strings"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
