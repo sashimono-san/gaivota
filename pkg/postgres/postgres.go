@@ -43,6 +43,16 @@ func (db *Database) Close() {
 	db.Pool.Close()
 }
 
+func (db *Database) Ping() (msg string, err error) {
+	err = db.Pool.Ping(context.Background())
+
+	if err != nil {
+		return "Could not connect to the Database", err
+	}
+
+	return "", nil
+}
+
 // func (db *Database) CreateTable(model interface{}) {
 // 	// Get how many properties are in the model
 // 	column_count := reflect.ValueOf(model).NumField()

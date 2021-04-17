@@ -201,3 +201,7 @@ type OrderStore interface {
 	// Update the Order in the store.
 	Update(context.Context, *Order) error
 }
+
+type HealthChecker interface {
+	Ping() (msg string, err error)
+}
