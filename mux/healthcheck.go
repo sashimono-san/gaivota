@@ -1,21 +1,22 @@
 package mux
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/leoschet/gaivota"
 )
 
-func NewHealthCheck(logger *log.Logger, dependencies []gaivota.HealthChecker) *HealthCheck {
-	return &HealthCheck{
+func InitHealthCheckRouter(mux *Mux, dependencies []gaivota.HealthChecker, logger *gaivota.Logger) {
+	healthcheck := &HealthCheck{
 		logger,
 		dependencies,
 	}
+
+	mux.Router.Get("/ping", healthcheck)
 }
 
 type HealthCheck struct {
-	logger       *log.Logger
+	logger       *gaivota.Logger
 	dependencies []gaivota.HealthChecker
 }
 
@@ -23,6 +24,7 @@ func (hc *HealthCheck) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, dep := range hc.dependencies {
 		msg, err := dep.Ping()
 		if err != nil {
+			hc.logger.Log(gaivota.LogLevelInfo, "Error while pinging %s: %v\n", dep.Name(), err)
 			http.Error(rw, msg, http.StatusInternalServerError)
 			return
 		}
