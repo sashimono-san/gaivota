@@ -8,7 +8,8 @@ services:
     depends_on:
       - db
     ports:
-      - "8888:${PORT}"
+      # Make sure to match the port with the config.json
+      - "8888:9090"
     volumes:
       - ./:/app
     networks:
