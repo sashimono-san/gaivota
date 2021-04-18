@@ -8,6 +8,12 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
+func NewUserStore(db *Database) UserStore {
+	return UserStore{
+		Database: db,
+	}
+}
+
 type UserStore struct {
 	Database *Database
 }

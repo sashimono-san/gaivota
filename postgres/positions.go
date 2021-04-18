@@ -7,6 +7,12 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
+func NewPositionStore(db *Database) PositionStore {
+	return PositionStore{
+		Database: db,
+	}
+}
+
 type PositionStore struct {
 	Database *Database
 }

@@ -8,6 +8,12 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
+func NewWalletStore(db *Database) WalletStore {
+	return WalletStore{
+		Database: db,
+	}
+}
+
 type WalletStore struct {
 	Database *Database
 }

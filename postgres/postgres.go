@@ -2,8 +2,12 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"regexp"
 	"strings"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/leoschet/gaivota"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -13,10 +17,6 @@ func toSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
-}
-
-type Database struct {
-	Pool *pgxpool.Pool
 }
 
 func Connect(ctx context.Context, connString string) (*Database, error) {
@@ -37,6 +37,30 @@ func Connect(ctx context.Context, connString string) (*Database, error) {
 	return db, nil
 }
 
+type Database struct {
+	Pool *pgxpool.Pool
+}
+
+func (db *Database) NewPostgresClient() *gaivota.Client {
+	userStore := NewUserStore(db)
+	portfolioStore := NewPortfolioStore(db)
+	walletStore := NewWalletStore(db)
+	investmentStore := NewInvestmentStore(db)
+	positionStore := NewPositionStore(db)
+	holdingStore := NewHoldingStore(db)
+	// orderStore := NewOrderStore(db)
+
+	return &gaivota.Client{
+		UserStore:       userStore,
+		PortfolioStore:  portfolioStore,
+		WalletStore:     walletStore,
+		InvestmentStore: investmentStore,
+		PositionStore:   positionStore,
+		HoldingStore:    holdingStore,
+		// OrderStore:      orderStore,
+	}
+}
+
 func (db *Database) Close() {
 	db.Pool.Close()
 }
@@ -47,6 +71,9 @@ func (db *Database) Ping() (msg string, err error) {
 	if err != nil {
 		return "Could not connect to the Database", err
 	}
+
+	stat := db.Pool.Stat()
+	log.Printf("Total of PostgreSQL connections in pool: %v\n", stat.TotalConns())
 
 	return "", nil
 }

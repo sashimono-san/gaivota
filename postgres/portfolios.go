@@ -8,6 +8,12 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
+func NewPortfolioStore(db *Database) PortfolioStore {
+	return PortfolioStore{
+		Database: db,
+	}
+}
+
 type PortfolioStore struct {
 	Database *Database
 }

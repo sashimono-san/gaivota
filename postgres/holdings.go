@@ -8,6 +8,12 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
+func NewHoldingStore(db *Database) HoldingStore {
+	return HoldingStore{
+		Database: db,
+	}
+}
+
 type HoldingStore struct {
 	Database *Database
 }
