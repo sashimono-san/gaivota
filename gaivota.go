@@ -2,6 +2,27 @@ package gaivota
 
 import "context"
 
+type LogLevel string
+
+const (
+	LogLevelInfo  LogLevel = "info"
+	LogLevelFatal LogLevel = "fatal"
+)
+
+type Logger interface {
+	Log(level LogLevel, format string, v ...interface{})
+}
+
+type Client struct {
+	UserStore       UserStore
+	PortfolioStore  PortfolioStore
+	WalletStore     WalletStore
+	InvestmentStore InvestmentStore
+	PositionStore   PositionStore
+	HoldingStore    HoldingStore
+	OrderStore      OrderStore
+}
+
 type User struct {
 	ID        int    `json:"id"`
 	Email     string `json:"email"`
