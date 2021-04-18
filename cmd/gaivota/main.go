@@ -3,67 +3,55 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"gaivota/handlers"
-	"gaivota/internal/config"
-	"gaivota/pkg/mux"
-	"gaivota/pkg/postgres"
-
 	"github.com/leoschet/gaivota"
+	"github.com/leoschet/gaivota/internal/config"
+	"github.com/leoschet/gaivota/log"
+	"github.com/leoschet/gaivota/mux"
+	"github.com/leoschet/gaivota/postgres"
 )
 
-func index(rw http.ResponseWriter, req *http.Request) {
-	log.Println("Got request to /")
-	data, err := ioutil.ReadAll(req.Body)
-
-	if err != nil {
-		// http.Error replaces the next couple of lines
-		// rw.WriteHeader(http.StatusBadRequest)
-		// rw.Write([]byte("Bad request."))
-		http.Error(rw, "Bad request", http.StatusBadRequest)
-		return
-	}
-	log.Printf("Data %s\n", data)
-	fmt.Fprintf(rw, "Hello, %s!\n", data)
-}
-
 func main() {
-	logger := log.New(os.Stdout, "Gaivota-api", log.LstdFlags)
-	healthcheck := handlers.NewHealthCheck(logger)
-	positions := handlers.NewPositions(logger)
+	logger := log.New("Gaivota-api")
 
-	router := mux.NewRouter("/")
-	router.Get("/ping", healthcheck)
+	settings, err := config.ReadFile("../config.json")
+	if err != nil {
+		logger.Log(gaivota.LogLevelFatal, err)
+	}
 
-	positionsRouter := router.NewSubrouter("/positions")
-	positionsRouter.Get("/", http.HandlerFunc(positions.Get))
-	positionsRouter.Post("/", http.HandlerFunc(positions.Add))
-
-	port, ok := os.LookupEnv("PORT")
-	if !ok {
+	if settings.Port == 0 {
 		panic("Missing mandatory environment variable PORT")
 	}
 
+	db, err := postgres.Connect(context.Background(), settings.DatabaseConnString)
+	if err != nil {
+		logger.Log(gaivota.LogLevelFatal, err)
+	}
+	defer db.Close()
+
+	pgClient := db.NewPostgresClient()
+
+	app := mux.New("")
+	app.InitRouter(pgClient, []gaivota.HealthChecker{db}, logger)
+
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
-		Addr:         fmt.Sprintf("127.0.0.1:%s", port),
-		Handler:      router,
+		Addr:         fmt.Sprintf("127.0.0.1:%v", settings.Port),
+		Handler:      app.Router,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
 
 	go func() {
-		logger.Println("Starting server")
+		logger.Log(gaivota.LogLevelInfo, "Starting server")
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Log(gaivota.LogLevelFatal, err)
 		}
 	}()
 
@@ -74,7 +62,7 @@ func main() {
 
 	// https://golang.org/ref/spec#Receive_operator
 	sig := <-sigChan
-	logger.Printf("Received terminate %s signal, gracefully shutting down.", sig)
+	logger.Log(gaivota.LogLevelInfo, "Received terminate %s signal, gracefully shutting down.", sig)
 
 	// https://pkg.go.dev/context
 	timeoutContext, _ := context.WithTimeout(context.Background(), 30*time.Second)
