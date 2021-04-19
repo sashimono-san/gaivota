@@ -7,7 +7,7 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func InitHealthCheckRouter(mux *Mux, dependencies []gaivota.HealthChecker, logger *gaivota.Logger) {
+func InitHealthCheckRouter(mux *Mux, dependencies []gaivota.HealthChecker, logger gaivota.Logger) {
 	healthcheck := &HealthCheck{
 		logger,
 		dependencies,

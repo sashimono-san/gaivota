@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/leoschet/gaivota"
 	"github.com/leoschet/mux"
 )
 
-func InitPortfolioRouter(mux *Mux, store gaivota.PortfolioStore, logger *gaivota.Logger) {
+func InitPortfolioRouter(mux *Mux, store gaivota.PortfolioStore, logger gaivota.Logger) {
 	portfolioHandler := &PortfolioHandler{
 		logger:         logger,
 		PortfolioStore: store,
