@@ -8,8 +8,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewUserStore(db *Database) UserStore {
-	return UserStore{
+func NewUserStore(db *Database) *UserStore {
+	return &UserStore{
 		Database: db,
 	}
 }

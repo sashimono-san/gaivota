@@ -8,8 +8,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewHoldingStore(db *Database) HoldingStore {
-	return HoldingStore{
+func NewHoldingStore(db *Database) *HoldingStore {
+	return &HoldingStore{
 		Database: db,
 	}
 }
@@ -60,7 +60,7 @@ func (store *HoldingStore) scanOne(row pgx.Row) (*gaivota.Holding, error) {
 
 func (store *HoldingStore) Add(ctx context.Context, holding *gaivota.Holding) (*gaivota.Holding, error) {
 	query := `insert into holdings ("wallet_id", "position_id", "amount")
-						values ($1, $2)
+						values ($1, $2, $3)
 						returning "id", "wallet_id", "position_id", "amount", "created_at", "updated_at", "deleted_at"`
 
 	row := store.Database.Pool.QueryRow(
@@ -129,7 +129,11 @@ func (store *HoldingStore) GetByUserID(ctx context.Context, userId int) (*[]gaiv
 						join wallets as w on "w.id" = "h.wallet_id"
 						where w.user_id = $1`
 
-	rows := store.Database.Pool.Query(ctx, query, userId)
+	rows, err := store.Database.Pool.Query(ctx, query, userId)
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not get holdings for user %v: %w", userId, err)
+	}
 
 	return store.scanAll(rows)
 }

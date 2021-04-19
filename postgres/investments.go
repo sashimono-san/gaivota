@@ -8,8 +8,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewInvestmentStore(db *Database) InvestmentStore {
-	return InvestmentStore{
+func NewInvestmentStore(db *Database) *InvestmentStore {
+	return &InvestmentStore{
 		Database: db,
 	}
 }
@@ -60,7 +60,7 @@ func (store *InvestmentStore) scanOne(row pgx.Row) (*gaivota.Investment, error) 
 
 func (store *InvestmentStore) Add(ctx context.Context, investment *gaivota.Investment) (*gaivota.Investment, error) {
 	query := `insert into investments ("portfolio_id", "token", "token_symbol")
-						values ($1, $2)
+						values ($1, $2, $3)
 						returning "id", "portfolio_id", "token", "token_symbol", "created_at", "updated_at", "deleted_at"`
 
 	row := store.Database.Pool.QueryRow(ctx, query, investment.PortfolioID, investment.Token, investment.TokenSymbol)

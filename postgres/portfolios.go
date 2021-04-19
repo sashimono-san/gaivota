@@ -8,8 +8,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewPortfolioStore(db *Database) PortfolioStore {
-	return PortfolioStore{
+func NewPortfolioStore(db *Database) *PortfolioStore {
+	return &PortfolioStore{
 		Database: db,
 	}
 }

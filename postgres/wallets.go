@@ -8,8 +8,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewWalletStore(db *Database) WalletStore {
-	return WalletStore{
+func NewWalletStore(db *Database) *WalletStore {
+	return &WalletStore{
 		Database: db,
 	}
 }
@@ -48,11 +48,12 @@ func (store *WalletStore) scanOne(row pgx.Row) (*gaivota.Wallet, error) {
 
 func (store *WalletStore) Add(ctx context.Context, wallet *gaivota.Wallet) (*gaivota.Wallet, error) {
 	query := `insert into wallets ("user_id", "name", "total_value", "address", "location")
-						values ($1, $2)
+						values ($1, $2, $3, $4, $5)
 						returning "id", "user_id", "name", "total_value", "address", "location", "created_at", "updated_at", "deleted_at"`
 
 	row := store.Database.Pool.QueryRow(
 		ctx, query, wallet.UserID, wallet.Name,
+		wallet.TotalValue, wallet.Address, wallet.Location,
 	)
 
 	newWallet, err := store.scanOne(row)
@@ -114,7 +115,7 @@ func (store *WalletStore) GetByUserID(ctx context.Context, userId int) (*[]gaivo
 	query := `select "id", "user_id", "name", "total_value", "address", "location", "created_at", "updated_at", "deleted_at"
 						from wallets where user_id = $1`
 
-	rows, err := store.Database.Pool.Query(ctx, query)
+	rows, err := store.Database.Pool.Query(ctx, query, userId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not get wallets for user %v: %w", userId, err)

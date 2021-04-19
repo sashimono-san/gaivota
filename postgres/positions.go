@@ -7,8 +7,8 @@ import (
 	"github.com/leoschet/gaivota"
 )
 
-func NewPositionStore(db *Database) PositionStore {
-	return PositionStore{
+func NewPositionStore(db *Database) *PositionStore {
+	return &PositionStore{
 		Database: db,
 	}
 }
@@ -19,7 +19,7 @@ type PositionStore struct {
 
 func (store *PositionStore) Add(ctx context.Context, position *gaivota.Position) (*gaivota.Position, error) {
 	query := `insert into positions ("investment_id", "amount", "average_price", "profit")
-						values ($1, $2)
+						values ($1, $2, $3, $4)
 						returning "id", "investment_id", "amount", "average_price", "profit", "created_at", "updated_at", "deleted_at"`
 
 	var newPosition gaivota.Position
@@ -115,8 +115,8 @@ func (store *PositionStore) GetByUserID(ctx context.Context, userId int) (*gaivo
 	err := store.Database.Pool.QueryRow(
 		ctx, query, userId,
 	).Scan(
-		&position.ID, &position.UserID, &position.Name,
-		&position.TotalValue, &position.Address, &position.Location,
+		&position.ID, &position.InvestmentID, &position.Amount,
+		&position.AveragePrice, &position.Profit,
 		&position.CreatedAt, &position.UpdatedAt, &position.DeletedAt,
 	)
 
@@ -129,12 +129,14 @@ func (store *PositionStore) GetByUserID(ctx context.Context, userId int) (*gaivo
 
 func (store *PositionStore) Update(ctx context.Context, position *gaivota.Position) error {
 	query := `update positions
-						set name = $1,
-								total_value = $2
+						set investment_id = $1,
+								amount = $2
+								average_price = $3
+								profit = $4
 						where id = $5`
 
 	cmdTags, err := store.Database.Pool.Exec(
-		ctx, query, &position.Name, &position.TotalValue, &position.ID,
+		ctx, query, &position.InvestmentID, &position.Amount, &position.AveragePrice, &position.Profit,
 	)
 
 	if err != nil || cmdTags.RowsAffected() == 0 {
