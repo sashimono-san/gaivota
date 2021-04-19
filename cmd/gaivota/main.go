@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"time"
 
 	"github.com/leoschet/gaivota"
@@ -16,11 +17,16 @@ import (
 )
 
 func main() {
-	logger := log.New("Gaivota-api")
+	logger := log.New("Gaivota-api - ")
 
-	settings, err := config.ReadFile("../config.json")
+	rootPath, err := os.Getwd()
 	if err != nil {
-		logger.Log(gaivota.LogLevelFatal, err)
+		logger.Log(gaivota.LogLevelFatal, "Error getting root path: %v", err)
+	}
+
+	settings, err := config.ReadFile(path.Join(rootPath, "/config.json"))
+	if err != nil {
+		logger.Log(gaivota.LogLevelFatal, "Error while reading config file: %v", err)
 	}
 
 	if settings.Port == 0 {
@@ -29,18 +35,19 @@ func main() {
 
 	db, err := postgres.Connect(context.Background(), settings.DatabaseConnString)
 	if err != nil {
-		logger.Log(gaivota.LogLevelFatal, err)
+		logger.Log(gaivota.LogLevelFatal, "Error while connecting to Postgres: %v", err)
 	}
 	defer db.Close()
 
 	pgClient := db.NewPostgresClient()
 
-	app := mux.New("")
+	app := mux.New("/")
 	app.InitRouter(pgClient, []gaivota.HealthChecker{db}, logger)
 
+	addr := fmt.Sprintf("0.0.0.0:%v", settings.Port)
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
-		Addr:         fmt.Sprintf("127.0.0.1:%v", settings.Port),
+		Addr:         addr,
 		Handler:      app.Router,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
@@ -48,10 +55,10 @@ func main() {
 	}
 
 	go func() {
-		logger.Log(gaivota.LogLevelInfo, "Starting server")
+		logger.Log(gaivota.LogLevelInfo, "Starting server on %s", addr)
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Log(gaivota.LogLevelFatal, err)
+			logger.Log(gaivota.LogLevelFatal, "Error while starting server: %v", err)
 		}
 	}()
 
