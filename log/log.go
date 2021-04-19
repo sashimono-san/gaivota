@@ -1,9 +1,9 @@
 package log
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/leoschet/gaivota"
 )
@@ -19,13 +19,14 @@ type Logger struct {
 }
 
 func (l *Logger) Log(level gaivota.LogLevel, format string, v ...interface{}) {
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
+	msg := format
+	if len(v) > 0 {
+		msg = fmt.Sprintf(format, v)
 	}
 
 	if level == gaivota.LogLevelFatal {
-		l.logger.Fatalf(format, v)
+		l.logger.Fatalln(msg)
 	}
 
-	go l.logger.Printf(format, v)
+	go l.logger.Println(msg)
 }
