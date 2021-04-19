@@ -2,9 +2,6 @@ FROM golang:1.15-alpine AS base
 
 WORKDIR /app
 
-ENV PORT=$PORT
-EXPOSE $PORT
-
 LABEL maintainer="Leonardo Schettini <leoschettini2@gmail.com>"
 
 FROM base AS builder-base
@@ -33,5 +30,6 @@ RUN go build -o gaivota ./cmd/gaivota
 FROM base AS production
 
 COPY --from=builder /app/gaivota ./
+COPY config.json config.json
 
 CMD ["./gaivota"]
