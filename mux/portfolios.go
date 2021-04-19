@@ -22,7 +22,7 @@ func InitPortfolioRouter(mux *Mux, store gaivota.PortfolioStore, logger *gaivota
 }
 
 type PortfolioHandler struct {
-	logger         *gaivota.Logger
+	logger         gaivota.Logger
 	PortfolioStore gaivota.PortfolioStore
 }
 
@@ -30,8 +30,23 @@ func (handler *PortfolioHandler) Get(rw http.ResponseWriter, req *http.Request) 
 	handler.logger.Log(gaivota.LogLevelInfo, "Handle GET Portfolio")
 
 	params := mux.PathParams(req)
+	portfolioId, err := strconv.Atoi(params["portfolioId"])
 
-	handler.PortfolioStore.Get(context.Background(), params["portfolioId"])
+	if err != nil {
+		http.Error(rw, "Portfolio ID must be an integer", http.StatusBadRequest)
+		return
+	}
+
+	portfolio, err := handler.PortfolioStore.Get(context.Background(), portfolioId)
+
+	if err != nil {
+		http.Error(rw, "Error while getting Portfolio", http.StatusInternalServerError)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+	json.NewEncoder(rw).Encode(portfolio)
 }
 
 func (handler *PortfolioHandler) Add(rw http.ResponseWriter, req *http.Request) {
@@ -45,7 +60,7 @@ func (handler *PortfolioHandler) Add(rw http.ResponseWriter, req *http.Request) 
 
 	// TODO: Improve error handling as in: https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 	if err != nil {
-		handler.logger.Log(gaivota.LogLevelInfo, err.Error())
+		handler.logger.Log(gaivota.LogLevelInfo, "Error while decoding POST /portfolio request body: %v", err)
 		http.Error(rw, "Error while decoding portfolio data", http.StatusBadRequest)
 		return
 	}
