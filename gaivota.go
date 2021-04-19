@@ -139,7 +139,7 @@ type PositionStore interface {
 	// Add creates a new Position in the PositionsStore and returns Position with ID
 	Add(context.Context, *Position) (*Position, error)
 	// Returns all Positions in the store
-	All(context.Context) ([]Position, error)
+	All(context.Context) (*[]Position, error)
 	// Delete the Position from the store
 	Delete(ctx context.Context, id int) error
 	// Gets Position if `ID` exists
@@ -164,7 +164,7 @@ type HoldingStore interface {
 	// Add creates a new Holding in the HoldingsStore and returns Holding with ID
 	Add(context.Context, *Holding) (*Holding, error)
 	// Returns all Holdings in the store
-	All(context.Context) ([]Holding, error)
+	All(context.Context) (*[]Holding, error)
 	// Delete the Holding from the store
 	Delete(ctx context.Context, id int) error
 	// Gets Holding if `ID` exists
