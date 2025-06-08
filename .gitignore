@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+bin
 
 # Test binary, built with `go test -c`
 *.test
@@ -19,3 +20,7 @@ tern.conf
 
 # App config
 config.json
+config.local.json
+
+# Data files
+data
