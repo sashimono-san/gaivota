@@ -94,7 +94,7 @@ func (store *HoldingStore) All(ctx context.Context) (*[]gaivota.Holding, error) 
 
 func (store *HoldingStore) Delete(ctx context.Context, id int) error {
 	query := `update holdings
-						set deleted_at = now(),
+						set deleted_at = now()
 						where id = $1`
 
 	cmdTags, err := store.Database.Pool.Exec(ctx, query, id)
@@ -150,7 +150,7 @@ func (store *HoldingStore) Update(ctx context.Context, holding *gaivota.Holding)
 	query := `update holdings
 						set wallet_id = $1,
 								position_id = $2,
-								amount = $3,
+								amount = $3
 						where id = $4`
 
 	cmdTags, err := store.Database.Pool.Exec(ctx, query, &holding.WalletID, &holding.PositionID, &holding.Amount, &holding.ID)

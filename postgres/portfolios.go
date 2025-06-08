@@ -73,7 +73,7 @@ func (store *PortfolioStore) All(ctx context.Context) (*[]gaivota.Portfolio, err
 
 func (store *PortfolioStore) Delete(ctx context.Context, id int) error {
 	query := `update portfolios
-						set deleted_at = now(),
+						set deleted_at = now()
 						where id = $1`
 
 	cmdTags, err := store.Database.Pool.Exec(
@@ -108,7 +108,7 @@ func (store *PortfolioStore) GetByUserID(ctx context.Context, userId int) (*[]ga
 	query := `select "id", "user_id", "name", "created_at", "updated_at", "deleted_at"
 						from portfolios where user_id = $1`
 
-	rows, err := store.Database.Pool.Query(ctx, query)
+	rows, err := store.Database.Pool.Query(ctx, query, userId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not get portfolios for user %v: %w", userId, err)

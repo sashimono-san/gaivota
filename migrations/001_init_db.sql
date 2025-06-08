@@ -113,33 +113,35 @@ create trigger update_orders_updated_at before update on orders for each row exe
 
 ---- create above / drop below ----
 
--- Drop users table
-drop trigger update_users_updated_at on users;
-drop table users;
-
--- Drop portfolios table
-drop trigger update_portfolios_updated_at on portfolios;
-drop table portfolios;
-
--- Drop wallets table
-drop trigger update_wallets_updated_at on wallets;
-drop table wallets;
-
--- Drop investments table
-drop trigger update_investments_updated_at on investments;
-drop table investments;
-
--- Drop positions table
-drop trigger update_positions_updated_at on positions;
-drop table positions;
+-- Drop orders table
+drop trigger update_orders_updated_at on orders;
+drop table orders;
+drop type order_types;
+drop type order_operations;
 
 -- Drop holdings table
 drop trigger update_holdings_updated_at on holdings;
 drop table holdings;
 
--- Drop orders table
-drop trigger update_orders_updated_at on orders;
-drop table orders;
+-- Drop positions table
+drop trigger update_positions_updated_at on positions;
+drop table positions;
+
+-- Drop investments table
+drop trigger update_investments_updated_at on investments;
+drop table investments;
+
+-- Drop wallets table
+drop trigger update_wallets_updated_at on wallets;
+drop table wallets;
+
+-- Drop portfolios table
+drop trigger update_portfolios_updated_at on portfolios;
+drop table portfolios;
+
+-- Drop users table
+drop trigger update_users_updated_at on users;
+drop table users;
 
 -- Drop functions
 drop function update_updated_at_column();

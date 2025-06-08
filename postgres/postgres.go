@@ -48,7 +48,7 @@ func (db *Database) NewPostgresClient() *gaivota.Client {
 	investmentStore := NewInvestmentStore(db)
 	positionStore := NewPositionStore(db)
 	holdingStore := NewHoldingStore(db)
-	// orderStore := NewOrderStore(db)
+	orderStore := NewOrderStore(db)
 
 	return &gaivota.Client{
 		UserStore:       userStore,
@@ -57,7 +57,7 @@ func (db *Database) NewPostgresClient() *gaivota.Client {
 		InvestmentStore: investmentStore,
 		PositionStore:   positionStore,
 		HoldingStore:    holdingStore,
-		// OrderStore:      orderStore,
+		OrderStore:      orderStore,
 	}
 }
 

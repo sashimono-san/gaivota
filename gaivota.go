@@ -1,6 +1,10 @@
 package gaivota
 
-import "context"
+import (
+	"context"
+	"database/sql"
+	"time"
+)
 
 type LogLevel string
 
@@ -24,13 +28,13 @@ type Client struct {
 }
 
 type User struct {
-	ID        int    `json:"id"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	CreatedAt string `json:"-"`
-	UpdatedAt string `json:"-"`
-	DeletedAt string `json:"-"`
+	ID        int           `json:"id"`
+	Email     string        `json:"email"`
+	FirstName string        `json:"firstName"`
+	LastName  string        `json:"lastName"`
+	CreatedAt time.Time     `json:"-"`
+	UpdatedAt time.Time     `json:"-"`
+	DeletedAt sql.NullTime  `json:"-"`
 }
 
 type UserStore interface {
@@ -47,12 +51,12 @@ type UserStore interface {
 }
 
 type Portfolio struct {
-	ID        int    `json:"id"`
-	UserID    int    `json:"user"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"-"`
-	UpdatedAt string `json:"-"`
-	DeletedAt string `json:"-"`
+	ID        int           `json:"id"`
+	UserID    int           `json:"user"`
+	Name      string        `json:"name"`
+	CreatedAt time.Time     `json:"-"`
+	UpdatedAt time.Time     `json:"-"`
+	DeletedAt sql.NullTime  `json:"-"`
 }
 
 type PortfolioStore interface {
@@ -71,15 +75,15 @@ type PortfolioStore interface {
 }
 
 type Wallet struct {
-	ID         int     `json:"id"`
-	UserID     int     `json:"user"`
-	Name       string  `json:"name"`
-	TotalValue float32 `json:"totalValue"`
-	Address    string  `json:"address"`
-	Location   string  `json:"location"`
-	CreatedAt  string  `json:"-"`
-	UpdatedAt  string  `json:"-"`
-	DeletedAt  string  `json:"-"`
+	ID         int           `json:"id"`
+	UserID     int           `json:"user"`
+	Name       string        `json:"name"`
+	TotalValue float32       `json:"totalValue"`
+	Address    string        `json:"address"`
+	Location   string        `json:"location"`
+	CreatedAt  time.Time     `json:"-"`
+	UpdatedAt  time.Time     `json:"-"`
+	DeletedAt  sql.NullTime  `json:"-"`
 }
 
 type WalletStore interface {
@@ -98,13 +102,13 @@ type WalletStore interface {
 }
 
 type Investment struct {
-	ID          int    `json:"id"`
-	PortfolioID int    `json:"portfolio"`
-	Token       string `json:"token"`
-	TokenSymbol string `json:"symbol"`
-	CreatedAt   string `json:"-"`
-	UpdatedAt   string `json:"-"`
-	DeletedAt   string `json:"-"`
+	ID          int           `json:"id"`
+	PortfolioID int           `json:"portfolio"`
+	Token       string        `json:"token"`
+	TokenSymbol string        `json:"symbol"`
+	CreatedAt   time.Time     `json:"-"`
+	UpdatedAt   time.Time     `json:"-"`
+	DeletedAt   sql.NullTime  `json:"-"`
 }
 
 type InvestmentStore interface {
@@ -125,14 +129,14 @@ type InvestmentStore interface {
 }
 
 type Position struct {
-	ID           int     `json:"id"`
-	InvestmentID int     `json:"investment"`
-	Amount       float64 `json:"amount"`
-	AveragePrice float64 `json:"averagePrice"`
-	Profit       float64 `json:"profit,omitempty"`
-	CreatedAt    string  `json:"-"`
-	UpdatedAt    string  `json:"-"`
-	DeletedAt    string  `json:"-"`
+	ID           int           `json:"id"`
+	InvestmentID int           `json:"investment"`
+	Amount       float64       `json:"amount"`
+	AveragePrice float64       `json:"averagePrice"`
+	Profit       float64       `json:"profit,omitempty"`
+	CreatedAt    time.Time     `json:"-"`
+	UpdatedAt    time.Time     `json:"-"`
+	DeletedAt    sql.NullTime  `json:"-"`
 }
 
 type PositionStore interface {
@@ -149,15 +153,15 @@ type PositionStore interface {
 }
 
 type Holding struct {
-	ID         int      `json:"id"`
-	WalletID   int      `json:"wallet"`
-	Wallet     Wallet   `json:"-"`
-	PositionID int      `json:"position"`
-	Position   Position `json:"-"`
-	Amount     float64  `json:"amount"`
-	CreatedAt  string   `json:"-"`
-	UpdatedAt  string   `json:"-"`
-	DeletedAt  string   `json:"-"`
+	ID         int           `json:"id"`
+	WalletID   int           `json:"wallet"`
+	Wallet     Wallet        `json:"-"`
+	PositionID int           `json:"position"`
+	Position   Position      `json:"-"`
+	Amount     float64       `json:"amount"`
+	CreatedAt  time.Time     `json:"-"`
+	UpdatedAt  time.Time     `json:"-"`
+	DeletedAt  sql.NullTime  `json:"-"`
 }
 
 type HoldingStore interface {
@@ -205,9 +209,9 @@ type Order struct {
 	Type       OrderType      `json:"type"`
 	Exchange   string         `json:"exchange"`
 	ExecutedAt string         `json:"executedAt"`
-	CreatedAt  string         `json:"-"`
-	UpdatedAt  string         `json:"-"`
-	DeletedAt  string         `json:"-"`
+	CreatedAt  time.Time      `json:"-"`
+	UpdatedAt  time.Time      `json:"-"`
+	DeletedAt  sql.NullTime   `json:"-"`
 }
 
 type OrderStore interface {
